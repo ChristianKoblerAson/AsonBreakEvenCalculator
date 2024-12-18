@@ -3,52 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosten/Nutzen-Analyse</title>
+    <title>Lohnt es sich für meine Firma auf Ason Payroll umzusteigen?</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 60vh;
             box-sizing: border-box;
         }
+
         h1 {
-            margin: 10px 0;
+            margin: 20px;
         }
+
         #input-section {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            margin-bottom: 10px;
-            width: 300px;
+            margin: 20px;
         }
+
         .input-row {
             display: flex;
-            justify-content: space-between;
-            width: 100%;
+            align-items: center;
             margin: 5px 0;
+            white-space: nowrap;
         }
+
         .input-row label {
-            flex: 1;
             margin-right: 10px;
         }
+
         .input-row input {
             width: 100px;
             padding: 5px;
             text-align: right;
+            margin-right: 10px;
         }
+
         button {
-            margin-top: 10px;
             padding: 5px 10px;
         }
+
         canvas {
-            flex-grow: 1;
             width: 100%;
             max-height: 75vh;
+            margin: 20px;
         }
     </style>
 </head>
@@ -57,7 +58,7 @@
     <div id="input-section">
         <div class="input-row">
             <label for="employee-count">Anzahl Mitarbeiter Deiner Firma:</label>
-            <input type="number" id="employee-count" value="10">
+            <input type="number" id="employee-count" value="30">
         </div>
 
         <div class="input-row">
