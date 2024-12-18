@@ -15,40 +15,40 @@
 
         h1 {
             margin: 20px;
+            font-size: 1.5rem;
         }
 
         #input-and-video {
             display: flex;
-            align-items: stretch; /* Beide Bereiche werden gleich hoch */
+            flex-wrap: wrap;
+            gap: 20px;
             margin: 20px;
         }
 
         #input-section {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            margin-right: 20px;
+            gap: 10px;
+            flex: 1;
+            min-width: 250px; 
         }
 
         .input-row {
             display: flex;
             align-items: center;
-            margin: 5px 0;
             white-space: nowrap;
         }
 
         .input-row label {
-            margin-right: 10px;
-            width: 350px;
-            text-align: left; /* Labels linksbündig */
-            display: inline-block;
+            flex: 1; /* Label nimmt so viel Platz wie möglich ein */
+            text-align: left; 
         }
 
         .input-row input {
             width: 100px;
             padding: 5px;
-            text-align: right; /* Eingabefelder rechtsbündig */
-            margin-right: 10px;
+            text-align: right; 
+            margin-left: 10px;
         }
 
         /* Hervorhebung für die manuellen Eingabefelder */
@@ -58,21 +58,41 @@
         }
 
         #video-section {
-            flex: 0 0 auto;
+            flex: 1;
+            min-width: 250px;
             display: flex;
             align-items: flex-start;
+            /* Legt ein Seitenverhältnis fest, um das Video responsiv zu machen */
+            position: relative;
         }
 
+        /* Damit der iframe sich an die Höhe des Input-Bereiches anpasst,
+           wird der iframe auf 100% Höhe seines Containers gesetzt.
+           Der Container selber wächst mit dem Inhalt links.
+        */
         #video-section iframe {
-            width: 350px;
+            width: 100%;
             height: 100%;
             border: none;
+            min-height: 200px; /* Mindesthöhe, um sicherzustellen, dass das Video sichtbar ist */
         }
 
         canvas {
             width: 100%;
-            max-height: 65vh;
+            max-height: 60vh;
             margin: 20px;
+        }
+
+        /* Responsive Anpassungen für schmalere Bildschirme */
+        @media (max-width: 768px) {
+            #input-and-video {
+                flex-direction: column;
+            }
+
+            #video-section iframe {
+                height: auto; 
+                min-height: 200px; 
+            }
         }
     </style>
 </head>
@@ -101,7 +121,7 @@
             </div>
         </div>
         <div id="video-section">
-            <!-- Beispiel-Video (kann durch jedes beliebige ersetzt werden) -->
+            <!-- Beispiel-Video (kann durch ein beliebiges ersetzt werden) -->
             <iframe src="AsonErklärt.mp4" allowfullscreen></iframe>
         </div>
     </div>
