@@ -17,11 +17,17 @@
             margin: 20px;
         }
 
+        #input-and-video {
+            display: flex;
+            align-items: stretch; /* Beide Bereiche werden gleich hoch */
+            margin: 20px;
+        }
+
         #input-section {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            margin: 20px;
+            margin-right: 20px;
         }
 
         .input-row {
@@ -33,50 +39,71 @@
 
         .input-row label {
             margin-right: 10px;
+            width: 350px;
+            text-align: left; /* Labels linksbündig */
+            display: inline-block;
         }
 
         .input-row input {
             width: 100px;
             padding: 5px;
-            text-align: right;
+            text-align: right; /* Eingabefelder rechtsbündig */
             margin-right: 10px;
         }
 
-        button {
-            padding: 5px 10px;
+        /* Hervorhebung für die manuellen Eingabefelder */
+        .manual-input input {
+            background-color: #e8f8e8;
+            border: 1px solid #8dc08d;
+        }
+
+        #video-section {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        #video-section iframe {
+            width: 350px;
+            height: 100%;
+            border: none;
         }
 
         canvas {
             width: 100%;
-            max-height: 75vh;
+            max-height: 65vh;
             margin: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Kosten/Nutzen Analyse</h1>
-    <div id="input-section">
-        <div class="input-row">
-            <label for="employee-count">Anzahl Mitarbeiter Deiner Firma:</label>
-            <input type="number" id="employee-count" value="30">
-        </div>
+    <h1>Lohnt es sich für meine Firma auf Ason Payroll umzusteigen?</h1>
+    <div id="input-and-video">
+        <div id="input-section">
+            <div class="input-row manual-input">
+                <label for="employee-count">* Anzahl Mitarbeiter Deiner Firma:</label>
+                <input type="number" id="employee-count" value="30">
+            </div>
 
-        <div class="input-row">
-            <label for="project-cost">Kosten Setup Ason (CHF):</label>
-            <input type="number" id="project-cost" value="6000" readonly>
-        </div>
+            <div class="input-row manual-input">
+                <label for="old-expense">* Kosten Outsourcing heute pro Monat (CHF):</label>
+                <input type="text" id="old-expense" value="4'815">
+            </div>
 
-        <div class="input-row">
-            <label for="old-expense">Kosten Outsourcing heute pro Monat (CHF):</label>
-            <input type="number" id="old-expense" value="4815">
-        </div>
+            <div class="input-row">
+                <label for="project-cost">Kosten Setup Ason (CHF):</label>
+                <input type="text" id="project-cost" value="6'000" readonly>
+            </div>
 
-        <div class="input-row">
-            <label for="new-expense">Kosten Ason pro Monat (CHF):</label>
-            <input type="number" id="new-expense" value="1500" readonly>
+            <div class="input-row">
+                <label for="new-expense">Kosten Ason pro Monat (CHF):</label>
+                <input type="text" id="new-expense" value="1'500" readonly>
+            </div>
         </div>
-
-        <button onclick="updateChart()">Berechnen</button>
+        <div id="video-section">
+            <!-- Beispiel-Video (kann durch jedes beliebige ersetzt werden) -->
+            <iframe src="AsonErklärt.mp4" allowfullscreen></iframe>
+        </div>
     </div>
 
     <canvas id="costChart"></canvas>
@@ -85,27 +112,51 @@
         let ctx = document.getElementById('costChart').getContext('2d');
         let costChart;
 
+        // Hilfsfunktion zur Schweizer Formatierung einer Zahl
+        function formatSwissNumber(number) {
+            let num = typeof number === 'number' ? number : parseFloat(number.toString().replace(/'/g, ''));
+            if (isNaN(num)) num = 0;
+            
+            // auf 2 Dezimalstellen runden
+            num = num.toFixed(2);
+
+            let parts = num.split('.');
+            let integerPart = parts[0];
+            const decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+
+            // Tausendertrennzeichen einfügen
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+
+            return integerPart + decimalPart;
+        }
+
         function recalculateCosts() {
-            const employeeCount = parseFloat(document.getElementById('employee-count').value);
+            // Werte auslesen
+            const employeeCount = parseFloat(document.getElementById('employee-count').value) || 0;
+            const oldExpenseRaw = document.getElementById('old-expense').value.replace(/'/g, ''); 
+            const oldExpense = parseFloat(oldExpenseRaw) || 0;
 
             // Neue Berechnung
             const projectCost = employeeCount * 25 + 270;
             const newExpense = employeeCount * 9.70;
 
-            document.getElementById('project-cost').value = projectCost.toFixed(2);
-            document.getElementById('new-expense').value = newExpense.toFixed(2);
+            // Formatierte Werte in die Felder schreiben
+            document.getElementById('project-cost').value = formatSwissNumber(projectCost);
+            document.getElementById('new-expense').value = formatSwissNumber(newExpense);
+            document.getElementById('old-expense').value = formatSwissNumber(oldExpense);
+
+            // Nach der Neuberechnung auch den Chart aktualisieren
+            updateChart();
         }
 
-        document.getElementById('employee-count').addEventListener('input', recalculateCosts);
-
         function calculateData() {
-            const projectCost = parseFloat(document.getElementById('project-cost').value);
-            const oldExpense = parseFloat(document.getElementById('old-expense').value);
-            const newExpense = parseFloat(document.getElementById('new-expense').value);
+            const projectCost = parseFloat(document.getElementById('project-cost').value.replace(/'/g, '')) || 0;
+            const oldExpense = parseFloat(document.getElementById('old-expense').value.replace(/'/g, '')) || 0;
+            const newExpense = parseFloat(document.getElementById('new-expense').value.replace(/'/g, '')) || 0;
             const monthlySavings = oldExpense - newExpense;
 
             // Anzahl Monate bis Break-Even (aufgerundet)
-            const breakEvenMonths = Math.ceil(projectCost / monthlySavings);
+            const breakEvenMonths = monthlySavings > 0 ? Math.ceil(projectCost / monthlySavings) : 0;
 
             let labels = [];
             let dataProjectCost = [];
@@ -123,13 +174,13 @@
                     dataAmortization.push(0);
                     dataSavings.push(0);
                 } else if (i < breakEvenMonths) {
-                    // In den vollen Amortisationsmonaten wird voll amortisiert
+                    // In den vollen Amortisationsmonaten
                     dataProjectCost.push(0);
                     dataSockel.push(newExpense);
                     dataAmortization.push(monthlySavings); 
                     dataSavings.push(0); 
-                } else if (i === breakEvenMonths) {
-                    // Im letzten Amortisierungsmonat wird der verbleibende Teil der Kosten Setup Ason amortisiert
+                } else if (i === breakEvenMonths && monthlySavings > 0) {
+                    // Im letzten Amortisierungsmonat
                     dataProjectCost.push(0);
                     dataSockel.push(newExpense);
 
@@ -144,11 +195,11 @@
                         dataSavings.push(0);
                     }
                 } else {
-                    // Nach dem Break-Even sind die Kosten amortisiert, die Differenz ist nun volle Einsparung
+                    // Nach dem Break-Even
                     dataProjectCost.push(0);
                     dataSockel.push(newExpense);
                     dataAmortization.push(0);
-                    dataSavings.push(monthlySavings);
+                    dataSavings.push(monthlySavings > 0 ? monthlySavings : 0);
                 }
             }
 
@@ -199,7 +250,16 @@
                     plugins: {
                         tooltip: {
                             mode: 'index',
-                            intersect: false
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (context.parsed.y !== null) {
+                                        label += ': CHF ' + formatSwissNumber(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
                         },
                         legend: {
                             position: 'top'
@@ -215,6 +275,11 @@
                             title: {
                                 display: true,
                                 text: 'CHF'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return formatSwissNumber(value);
+                                }
                             }
                         }
                     }
@@ -227,9 +292,12 @@
             renderChart();
         }
 
-        // Initiale Berechnung durchführen
+        // Event Listener für Änderungen an den beiden manuellen Eingabefeldern
+        document.getElementById('employee-count').addEventListener('input', recalculateCosts);
+        document.getElementById('old-expense').addEventListener('input', recalculateCosts);
+
+        // Initiale Berechnung
         recalculateCosts();
-        renderChart();
     </script>
 </body>
 </html>
