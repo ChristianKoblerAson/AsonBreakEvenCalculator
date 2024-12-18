@@ -46,14 +46,14 @@
 <body>
     <h1>Kosten/Nutzen Analyse</h1>
     <div id="input-section">
-        <label for="project-cost">Projektkosten (CHF):</label>
+        <label for="project-cost">Kosten Setup Ason (CHF):</label>
         <input type="number" id="project-cost" value="6000">
 
-        <label for="old-expense">Aufwand früher pro Monat (CHF):</label>
+        <label for="old-expense">Kosten Outsourcing heute pro Monat (CHF):</label>
         <input type="number" id="old-expense" value="4815">
 
-        <label for="new-expense">Aufwand heute pro Monat (CHF):</label>
-        <input type="number" id="new-expense" value="15">
+        <label for="new-expense">Kosten Ason pro Monat (CHF):</label>
+        <input type="number" id="new-expense" value="1500">
 
         <button onclick="updateChart()">Berechnen</button>
     </div>
@@ -83,7 +83,7 @@
                 labels.push(`Monat ${i}`);
 
                 if (i === 0) {
-                    // Im Monat 0: Nur Projektkosten
+                    // Im Monat 0: Nur Kosten Setup Ason
                     dataProjectCost.push(projectCost);
                     dataSockel.push(0);
                     dataAmortization.push(0);
@@ -95,7 +95,7 @@
                     dataAmortization.push(monthlySavings); 
                     dataSavings.push(0); 
                 } else if (i === breakEvenMonths) {
-                    // Im letzten Amortisierungsmonat wird der verbleibende Teil der Projektkosten amortisiert
+                    // Im letzten Amortisierungsmonat wird der verbleibende Teil der Kosten Setup Ason amortisiert
                     dataProjectCost.push(0);
                     dataSockel.push(newExpense);
 
@@ -133,21 +133,21 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Projektkosten (nur Monat 0)',
+                            label: 'Kosten Setup Ason',
                             data: dataProjectCost,
                             backgroundColor: 'rgba(54, 162, 235, 0.6)',
                             stack: 'combined',
                             borderWidth: 1
                         },
                         {
-                            label: 'Sockel heutiger Aufwand',
+                            label: 'Kosten Ason',
                             data: dataSockel,
                             backgroundColor: 'rgba(255, 99, 132, 0.6)',
                             stack: 'combined',
                             borderWidth: 1
                         },
                         {
-                            label: 'Amortisation Projektkosten',
+                            label: 'Amortisation Kosten Setup Ason',
                             data: dataAmortization,
                             backgroundColor: 'rgba(255, 206, 86, 0.6)',
                             stack: 'combined',
