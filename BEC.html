@@ -13,7 +13,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 60vh; /* geändert von 100vh auf 70vh */
+            height: 60vh;
             box-sizing: border-box;
         }
         h1 {
@@ -24,13 +24,22 @@
             flex-direction: column;
             align-items: flex-start;
             margin-bottom: 10px;
+            width: 300px;
         }
-        label {
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
             margin: 5px 0;
         }
-        input {
+        .input-row label {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .input-row input {
             width: 100px;
             padding: 5px;
+            text-align: right;
         }
         button {
             margin-top: 10px;
@@ -46,14 +55,25 @@
 <body>
     <h1>Kosten/Nutzen Analyse</h1>
     <div id="input-section">
-        <label for="project-cost">Kosten Setup Ason (CHF):</label>
-        <input type="number" id="project-cost" value="6000">
+        <div class="input-row">
+            <label for="employee-count">Anzahl Mitarbeiter Deiner Firma:</label>
+            <input type="number" id="employee-count" value="10">
+        </div>
 
-        <label for="old-expense">Kosten Outsourcing heute pro Monat (CHF):</label>
-        <input type="number" id="old-expense" value="4815">
+        <div class="input-row">
+            <label for="project-cost">Kosten Setup Ason (CHF):</label>
+            <input type="number" id="project-cost" value="6000" readonly>
+        </div>
 
-        <label for="new-expense">Kosten Ason pro Monat (CHF):</label>
-        <input type="number" id="new-expense" value="1500">
+        <div class="input-row">
+            <label for="old-expense">Kosten Outsourcing heute pro Monat (CHF):</label>
+            <input type="number" id="old-expense" value="4815">
+        </div>
+
+        <div class="input-row">
+            <label for="new-expense">Kosten Ason pro Monat (CHF):</label>
+            <input type="number" id="new-expense" value="1500" readonly>
+        </div>
 
         <button onclick="updateChart()">Berechnen</button>
     </div>
@@ -63,6 +83,19 @@
     <script>
         let ctx = document.getElementById('costChart').getContext('2d');
         let costChart;
+
+        function recalculateCosts() {
+            const employeeCount = parseFloat(document.getElementById('employee-count').value);
+
+            // Neue Berechnung
+            const projectCost = employeeCount * 25 + 270;
+            const newExpense = employeeCount * 9.70;
+
+            document.getElementById('project-cost').value = projectCost.toFixed(2);
+            document.getElementById('new-expense').value = newExpense.toFixed(2);
+        }
+
+        document.getElementById('employee-count').addEventListener('input', recalculateCosts);
 
         function calculateData() {
             const projectCost = parseFloat(document.getElementById('project-cost').value);
@@ -99,16 +132,13 @@
                     dataProjectCost.push(0);
                     dataSockel.push(newExpense);
 
-                    // Verbleibende Amortisation:
                     const alreadyAmortized = (breakEvenMonths - 1) * monthlySavings;
                     const remainingAmortization = projectCost - alreadyAmortized;
 
-                    // Wenn remainingAmortization weniger als monthlySavings ist, wird der Rest durch Einsparungen aufgefüllt
                     if (remainingAmortization < monthlySavings) {
                         dataAmortization.push(remainingAmortization);
                         dataSavings.push(monthlySavings - remainingAmortization);
                     } else {
-                        // Falls es genau aufgeht (eher theoretisch), dann keine Einsparungen
                         dataAmortization.push(remainingAmortization);
                         dataSavings.push(0);
                     }
@@ -196,6 +226,8 @@
             renderChart();
         }
 
+        // Initiale Berechnung durchführen
+        recalculateCosts();
         renderChart();
     </script>
 </body>
