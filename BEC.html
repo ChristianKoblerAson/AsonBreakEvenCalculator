@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosten/Nutzen-Analyse</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 70vh; /* geändert von 100vh auf 70vh */
+            box-sizing: border-box;
+        }
+        h1 {
+            margin: 10px 0;
+        }
+        #input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        label {
+            margin: 5px 0;
+        }
+        input {
+            width: 100px;
+            padding: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+        }
+        canvas {
+            flex-grow: 1;
+            width: 100%;
+            max-height: 75vh;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kosten/Nutzen Analyse</h1>
+    <div id="input-section">
+        <label for="project-cost">Projektkosten (CHF):</label>
+        <input type="number" id="project-cost" value="6000">
+
+        <label for="old-expense">Aufwand früher pro Monat (CHF):</label>
+        <input type="number" id="old-expense" value="4815">
+
+        <label for="new-expense">Aufwand heute pro Monat (CHF):</label>
+        <input type="number" id="new-expense" value="15">
+
+        <button onclick="updateChart()">Berechnen</button>
+    </div>
+
+    <canvas id="costChart"></canvas>
+
+    <script>
+        let ctx = document.getElementById('costChart').getContext('2d');
+        let costChart;
+
+        function calculateData() {
+            const projectCost = parseFloat(document.getElementById('project-cost').value);
+            const oldExpense = parseFloat(document.getElementById('old-expense').value);
+            const newExpense = parseFloat(document.getElementById('new-expense').value);
+            const monthlySavings = oldExpense - newExpense;
+
+            // Anzahl Monate bis Break-Even (aufgerundet)
+            const breakEvenMonths = Math.ceil(projectCost / monthlySavings);
+
+            let labels = [];
+            let dataProjectCost = [];
+            let dataSockel = [];
+            let dataAmortization = [];
+            let dataSavings = [];
+
+            for (let i = 0; i <= breakEvenMonths + 3; i++) {
+                labels.push(`Monat ${i}`);
+
+                if (i === 0) {
+                    // Im Monat 0: Nur Projektkosten
+                    dataProjectCost.push(projectCost);
+                    dataSockel.push(0);
+                    dataAmortization.push(0);
+                    dataSavings.push(0);
+                } else if (i < breakEvenMonths) {
+                    // In den vollen Amortisationsmonaten wird voll amortisiert
+                    dataProjectCost.push(0);
+                    dataSockel.push(newExpense);
+                    dataAmortization.push(monthlySavings); 
+                    dataSavings.push(0); 
+                } else if (i === breakEvenMonths) {
+                    // Im letzten Amortisierungsmonat wird der verbleibende Teil der Projektkosten amortisiert
+                    dataProjectCost.push(0);
+                    dataSockel.push(newExpense);
+
+                    // Verbleibende Amortisation:
+                    const alreadyAmortized = (breakEvenMonths - 1) * monthlySavings;
+                    const remainingAmortization = projectCost - alreadyAmortized;
+
+                    // Wenn remainingAmortization weniger als monthlySavings ist, wird der Rest durch Einsparungen aufgefüllt
+                    if (remainingAmortization < monthlySavings) {
+                        dataAmortization.push(remainingAmortization);
+                        dataSavings.push(monthlySavings - remainingAmortization);
+                    } else {
+                        // Falls es genau aufgeht (eher theoretisch), dann keine Einsparungen
+                        dataAmortization.push(remainingAmortization);
+                        dataSavings.push(0);
+                    }
+                } else {
+                    // Nach dem Break-Even sind die Kosten amortisiert, die Differenz ist nun volle Einsparung
+                    dataProjectCost.push(0);
+                    dataSockel.push(newExpense);
+                    dataAmortization.push(0);
+                    dataSavings.push(monthlySavings);
+                }
+            }
+
+            return { labels, dataProjectCost, dataSockel, dataAmortization, dataSavings };
+        }
+
+        function renderChart() {
+            const { labels, dataProjectCost, dataSockel, dataAmortization, dataSavings } = calculateData();
+
+            costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Projektkosten (nur Monat 0)',
+                            data: dataProjectCost,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            stack: 'combined',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Sockel heutiger Aufwand',
+                            data: dataSockel,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            stack: 'combined',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Amortisation Projektkosten',
+                            data: dataAmortization,
+                            backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                            stack: 'combined',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Kosteneinsparungen',
+                            data: dataSavings,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            stack: 'combined',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'CHF'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (costChart) costChart.destroy();
+            renderChart();
+        }
+
+        renderChart();
+    </script>
+</body>
+</html>
